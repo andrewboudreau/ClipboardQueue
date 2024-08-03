@@ -51,10 +51,13 @@ public partial class MainForm : Form
     public MainForm()
     {
         InitializeComponent();
-        AttachClipboardListener();
         UpdateStatusLabel();
         _proc = HookCallback;
         _hookId = SetHook(_proc);
+
+        // Set up the notify icon
+        notifyIcon1.Icon = SystemIcons.Application; // Use the default application icon
+        notifyIcon1.Visible = true;
 
         // Set up the notify icon context menu
         ContextMenuStrip contextMenu = new();
@@ -65,6 +68,9 @@ public partial class MainForm : Form
         // Hide the form on startup
         this.WindowState = FormWindowState.Minimized;
         this.ShowInTaskbar = false;
+
+        // Attach listeners
+        ToggleListeners(true);
     }
 
     private void ShowForm(object? sender, EventArgs e)
@@ -107,38 +113,29 @@ public partial class MainForm : Form
         base.WndProc(ref m);
     }
 
-    private void AttachClipboardListener()
+
+    private void ToggleListeners(bool attach)
     {
-        if (!isListening)
+        if (attach)
         {
             AddClipboardFormatListener(this.Handle);
+            _hookId = SetHook(_proc);
             isListening = true;
             toggleListenerMenuItem.Text = "Detach Listener";
-            UpdateStatusLabel();
         }
-    }
-
-    private void DetachClipboardListener()
-    {
-        if (isListening)
+        else
         {
             RemoveClipboardFormatListener(this.Handle);
+            UnhookWindowsHookEx(_hookId);
             isListening = false;
             toggleListenerMenuItem.Text = "Attach Listener";
-            UpdateStatusLabel();
         }
+        UpdateStatusLabel();
     }
 
     private void ToggleClipboardListener(object sender, EventArgs e)
     {
-        if (isListening)
-        {
-            DetachClipboardListener();
-        }
-        else
-        {
-            AttachClipboardListener();
-        }
+        ToggleListeners(!isListening);
     }
 
     private void OnClipboardChanged()
@@ -237,8 +234,7 @@ public partial class MainForm : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        UnhookWindowsHookEx(_hookId);
-        DetachClipboardListener();
+        ToggleListeners(false);
         base.OnFormClosing(e);
     }
 
