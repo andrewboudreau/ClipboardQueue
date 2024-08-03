@@ -1,12 +1,17 @@
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace ClipboardQueue;
+
+public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
 public partial class MainForm : Form
 {
     private readonly Queue<string> clipboardQueue = new();
     private const int WM_CLIPBOARDUPDATE = 0x031D;
     private bool isListening = false;
+    private LowLevelKeyboardProc _proc;
+    private IntPtr _hookID = IntPtr.Zero;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -16,13 +21,33 @@ public partial class MainForm : Form
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
 
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+    private const int WH_KEYBOARD_LL = 13;
+    private const int WM_KEYDOWN = 0x0100;
+    private const int VK_CONTROL = 0x11;
+    private const int VK_C = 0x43;
+    private const int VK_V = 0x56;
+    private const int VK_P = 0x50;
+
     public MainForm()
     {
         InitializeComponent();
-        this.KeyPreview = true;
-        this.KeyDown += MainForm_KeyDown;
         AttachClipboardListener();
         UpdateStatusLabel();
+        _proc = HookCallback;
+        _hookID = SetHook(_proc);
     }
 
     protected override void WndProc(ref Message m)
@@ -110,23 +135,45 @@ public partial class MainForm : Form
         base.OnFormClosing(e);
     }
 
-    private void MainForm_KeyDown(object? sender, KeyEventArgs e)
+    private IntPtr SetHook(LowLevelKeyboardProc proc)
     {
-        if (e.Control)
+        using (Process curProcess = Process.GetCurrentProcess())
+        using (ProcessModule curModule = curProcess.MainModule)
         {
-            switch (char.ToLower((char)e.KeyCode))
+            return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
+        }
+    }
+
+    private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+        {
+            int vkCode = Marshal.ReadInt32(lParam);
+            if (IsKeyPressed(VK_CONTROL))
             {
-                case 'c':
-                    OnCopyDetected();
-                    break;
-                case 'v':
-                    OnPasteDetected();
-                    break;
-                case 'p':
-                    PrintQueue();
-                    break;
+                switch (vkCode)
+                {
+                    case VK_C:
+                        OnCopyDetected();
+                        break;
+                    case VK_V:
+                        OnPasteDetected();
+                        break;
+                    case VK_P:
+                        PrintQueue();
+                        break;
+                }
             }
         }
+        return CallNextHookEx(_hookID, nCode, wParam, lParam);
+    }
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int vKey);
+
+    private static bool IsKeyPressed(int vKey)
+    {
+        return (GetAsyncKeyState(vKey) & 0x8000) != 0;
     }
 
     private void OnCopyDetected()
@@ -143,6 +190,13 @@ public partial class MainForm : Form
             Clipboard.SetText(text);
             UpdateStatusLabel();
         }
+    }
+
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        UnhookWindowsHookEx(_hookID);
+        DetachClipboardListener();
+        base.OnFormClosing(e);
     }
 
     private void PrintQueue()
