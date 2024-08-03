@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Text;
 
 namespace ClipboardQueue;
 
@@ -16,10 +17,15 @@ public partial class MainForm : Form
 {
     private readonly Queue<string> clipboardQueue = new();
     private readonly LowLevelKeyboardProc _proc;
+    private readonly List<char> operationHistory = new();
 
     private const int WM_CLIPBOARDUPDATE = 0x031D;
     private bool isListening = false;
     private IntPtr _hookId = IntPtr.Zero;
+
+    private const char CUT_ICON = '✂';
+    private const char COPY_ICON = '📋';
+    private const char PASTE_ICON = '📄';
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -145,7 +151,28 @@ public partial class MainForm : Form
             string text = Clipboard.GetText();
             clipboardQueue.Enqueue(text);
             UpdateStatusLabel();
+            AddToHistory(COPY_ICON);
         }
+    }
+
+    private void AddToHistory(char operation)
+    {
+        operationHistory.Insert(0, operation);
+        if (operationHistory.Count > 20)
+        {
+            operationHistory.RemoveAt(20);
+        }
+        UpdateHistoryLabel();
+    }
+
+    private void UpdateHistoryLabel()
+    {
+        StringBuilder history = new StringBuilder();
+        foreach (char op in operationHistory)
+        {
+            history.Append(op);
+        }
+        historyStatusLabel.Text = history.ToString();
     }
 
     private void UpdateStatusLabel()
@@ -188,6 +215,9 @@ public partial class MainForm : Form
                     case VK_V:
                         OnPasteDetected();
                         break;
+                    case VK_X:
+                        OnCutDetected();
+                        break;
                     case VK_P:
                         PrintQueue();
                         break;
@@ -209,6 +239,7 @@ public partial class MainForm : Form
     {
         // The actual copying is handled by OnClipboardChanged
         // This method can be used for additional actions if needed
+        AddToHistory(COPY_ICON);
     }
 
     private void OnPasteDetected()
@@ -218,7 +249,13 @@ public partial class MainForm : Form
             string text = clipboardQueue.Dequeue();
             Clipboard.SetText(text);
             UpdateStatusLabel();
+            AddToHistory(PASTE_ICON);
         }
+    }
+
+    private void OnCutDetected()
+    {
+        AddToHistory(CUT_ICON);
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)

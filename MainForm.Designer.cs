@@ -42,7 +42,7 @@
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(24, 24);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, historyStatusLabel });
             statusStrip1.Location = new Point(0, 418);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(800, 32);
@@ -54,6 +54,12 @@
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(85, 25);
             toolStripStatusLabel1.Text = "No Items";
+            // 
+            // historyStatusLabel
+            // 
+            historyStatusLabel.Name = "historyStatusLabel";
+            historyStatusLabel.Size = new Size(0, 25);
+            historyStatusLabel.Text = "";
             // 
             // menuStrip1
             // 
@@ -113,6 +119,7 @@
 
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripStatusLabel historyStatusLabel;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem toggleListenerMenuItem;
         private ListBox queueListBox;
