@@ -53,7 +53,6 @@ public partial class MainForm : Form
         InitializeComponent();
         UpdateStatusLabel();
         _proc = HookCallback;
-        _hookId = SetHook(_proc);
 
         // Set up the notify icon
         notifyIcon1.Icon = SystemIcons.Application; // Use the default application icon
@@ -119,16 +118,16 @@ public partial class MainForm : Form
         if (attach)
         {
             AddClipboardFormatListener(this.Handle);
-            _hookId = SetHook(_proc);
+            _hookId = SetWindowsHookEx(WH_KEYBOARD_LL, _proc, GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName), 0);
             isListening = true;
-            toggleListenerMenuItem.Text = "Detach Listener";
+            toggleListenerMenuItem.Text = "Detach Listeners";
         }
         else
         {
             RemoveClipboardFormatListener(this.Handle);
             UnhookWindowsHookEx(_hookId);
             isListening = false;
-            toggleListenerMenuItem.Text = "Attach Listener";
+            toggleListenerMenuItem.Text = "Attach Listeners";
         }
         UpdateStatusLabel();
     }
@@ -172,17 +171,6 @@ public partial class MainForm : Form
         return result.Length <= maxLength ? result : string.Concat(result.AsSpan(0, maxLength - 3), "...");
     }
 
-    private IntPtr SetHook(LowLevelKeyboardProc proc)
-    {
-        using Process curProcess = Process.GetCurrentProcess();
-        if (curProcess?.MainModule == null)
-        {
-            throw new InvalidOperationException("Failed to get the main module of the current process.");
-        }
-
-        using ProcessModule curModule = curProcess.MainModule;
-        return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
-    }
 
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
