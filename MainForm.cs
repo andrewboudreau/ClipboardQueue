@@ -17,8 +17,8 @@ public partial class MainForm : Form
     private readonly Queue<string> clipboardQueue = new();
     private const int WM_CLIPBOARDUPDATE = 0x031D;
     private bool isListening = false;
-    private LowLevelKeyboardProc _proc;
-    private IntPtr _hookID = IntPtr.Zero;
+    private readonly LowLevelKeyboardProc _proc;
+    private readonly IntPtr _hookId = IntPtr.Zero;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -54,10 +54,10 @@ public partial class MainForm : Form
         AttachClipboardListener();
         UpdateStatusLabel();
         _proc = HookCallback;
-        _hookID = SetHook(_proc);
+        _hookId = SetHook(_proc);
 
         // Set up the notify icon context menu
-        ContextMenuStrip contextMenu = new ContextMenuStrip();
+        ContextMenuStrip contextMenu = new();
         contextMenu.Items.Add("Show", null, ShowForm);
         contextMenu.Items.Add("Exit", null, ExitApplication);
         notifyIcon1.ContextMenuStrip = contextMenu;
@@ -67,13 +67,13 @@ public partial class MainForm : Form
         this.ShowInTaskbar = false;
     }
 
-    private void ShowForm(object sender, EventArgs e)
+    private void ShowForm(object? sender, EventArgs e)
     {
         Show();
         this.WindowState = FormWindowState.Normal;
     }
 
-    private void ExitApplication(object sender, EventArgs e)
+    private void ExitApplication(object? sender, EventArgs e)
     {
         Application.Exit();
     }
@@ -175,19 +175,16 @@ public partial class MainForm : Form
         return result.Length <= maxLength ? result : string.Concat(result.AsSpan(0, maxLength - 3), "...");
     }
 
-    protected override void OnFormClosing(FormClosingEventArgs e)
-    {
-        DetachClipboardListener();
-        base.OnFormClosing(e);
-    }
-
     private IntPtr SetHook(LowLevelKeyboardProc proc)
     {
-        using (Process curProcess = Process.GetCurrentProcess())
-        using (ProcessModule curModule = curProcess.MainModule)
+        using Process curProcess = Process.GetCurrentProcess();
+        if (curProcess?.MainModule == null)
         {
-            return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
+            throw new InvalidOperationException("Failed to get the main module of the current process.");
         }
+
+        using ProcessModule curModule = curProcess.MainModule;
+        return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
     }
 
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -211,7 +208,7 @@ public partial class MainForm : Form
                 }
             }
         }
-        return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        return CallNextHookEx(_hookId, nCode, wParam, lParam);
     }
 
     [DllImport("user32.dll")]
@@ -240,7 +237,7 @@ public partial class MainForm : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        UnhookWindowsHookEx(_hookID);
+        UnhookWindowsHookEx(_hookId);
         DetachClipboardListener();
         base.OnFormClosing(e);
     }
