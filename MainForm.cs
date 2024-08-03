@@ -21,6 +21,8 @@ public partial class MainForm : Form
     {
         InitializeComponent();
         AddClipboardFormatListener(this.Handle);
+        this.KeyPreview = true;
+        this.KeyDown += MainForm_KeyDown;
     }
 
     protected override void WndProc(ref Message m)
@@ -55,13 +57,44 @@ public partial class MainForm : Form
         base.OnFormClosing(e);
     }
 
-    // This method should be called when a paste operation is detected
+    private void MainForm_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Control)
+        {
+            switch (char.ToLower((char)e.KeyCode))
+            {
+                case 'c':
+                    OnCopyDetected();
+                    break;
+                case 'v':
+                    OnPasteDetected();
+                    break;
+                case 'p':
+                    PrintQueue();
+                    break;
+            }
+        }
+    }
+
+    private void OnCopyDetected()
+    {
+        // The actual copying is handled by OnClipboardChanged
+        // This method can be used for additional actions if needed
+    }
+
     private void OnPasteDetected()
     {
         if (clipboardQueue.Count > 0)
         {
-            clipboardQueue.Dequeue();
+            string text = clipboardQueue.Dequeue();
+            Clipboard.SetText(text);
             UpdateStatusLabel();
         }
+    }
+
+    private void PrintQueue()
+    {
+        string queueContents = string.Join(Environment.NewLine, clipboardQueue);
+        MessageBox.Show($"Current Queue Contents:{Environment.NewLine}{queueContents}", "Queue Contents");
     }
 }
