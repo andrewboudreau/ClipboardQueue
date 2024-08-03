@@ -24,8 +24,8 @@ public partial class MainForm : Form
     private IntPtr _hookId = IntPtr.Zero;
 
     private const char CUT_ICON = '✂';
-    private const char COPY_ICON = '📋';
-    private const char PASTE_ICON = '📄';
+    private const char COPY_ICON = 'C';//'📋';
+    private const char PASTE_ICON = 'P';//'📄';
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -52,8 +52,9 @@ public partial class MainForm : Form
     private const int WM_KEYDOWN = 0x0100;
     private const int VK_CONTROL = 0x11;
     private const int VK_C = 0x43;
-    private const int VK_V = 0x56;
     private const int VK_P = 0x50;
+    private const int VK_V = 0x56;
+    private const int VK_X = 0x58;
 
     public MainForm()
     {
