@@ -50,7 +50,7 @@
             // toolStripStatusLabel1
             // 
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(179, 25);
+            toolStripStatusLabel1.Size = new Size(85, 25);
             toolStripStatusLabel1.Text = "No Items";
             // 
             // menuStrip1
@@ -66,39 +66,36 @@
             // toggleListenerMenuItem
             // 
             toggleListenerMenuItem.Name = "toggleListenerMenuItem";
-            toggleListenerMenuItem.Size = new Size(270, 29);
-            toggleListenerMenuItem.Text = "Attach Clipboard Queue Listener";
+            toggleListenerMenuItem.Size = new Size(144, 29);
+            toggleListenerMenuItem.Text = "Attach Listener";
             toggleListenerMenuItem.Click += ToggleClipboardListener;
+            // 
+            // queueListBox
+            // 
+            queueListBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            queueListBox.BorderStyle = BorderStyle.FixedSingle;
+            queueListBox.FormattingEnabled = true;
+            queueListBox.ItemHeight = 25;
+            queueListBox.Location = new Point(0, 30);
+            queueListBox.Name = "queueListBox";
+            queueListBox.Size = new Size(800, 427);
+            queueListBox.TabIndex = 2;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(queueListBox);
             Controls.Add(statusStrip1);
             Controls.Add(menuStrip1);
+            Controls.Add(queueListBox);
             MainMenuStrip = menuStrip1;
             Name = "MainForm";
-            Text = "ClipboardQueue";
+            Text = "Clipboard Queue";
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
-            // 
-            // queueListBox
-            // 
-            queueListBox.Dock = DockStyle.Fill;
-            queueListBox.FormattingEnabled = true;
-            queueListBox.ItemHeight = 25;
-            queueListBox.Location = new Point(0, 33);
-            queueListBox.Name = "queueListBox";
-            queueListBox.Size = new Size(800, 385);
-            queueListBox.TabIndex = 2;
-            // 
-            // MainForm
-            // 
-            Controls.Add(queueListBox);
             ResumeLayout(false);
             PerformLayout();
         }
