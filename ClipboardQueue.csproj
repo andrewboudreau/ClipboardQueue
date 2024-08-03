@@ -8,4 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove=".aider.chat.history.md" />
+    <None Remove=".aider.input.history" />
+  </ItemGroup>
+
 </Project>
