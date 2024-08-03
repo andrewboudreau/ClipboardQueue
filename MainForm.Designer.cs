@@ -32,6 +32,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             menuStrip1 = new MenuStrip();
             toggleListenerMenuItem = new ToolStripMenuItem();
+            queueListBox = new ListBox();
             statusStrip1.SuspendLayout();
             menuStrip1.SuspendLayout();
             SuspendLayout();
@@ -74,6 +75,7 @@
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(queueListBox);
             Controls.Add(statusStrip1);
             Controls.Add(menuStrip1);
             MainMenuStrip = menuStrip1;
@@ -83,6 +85,20 @@
             statusStrip1.PerformLayout();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
+            // 
+            // queueListBox
+            // 
+            queueListBox.Dock = DockStyle.Fill;
+            queueListBox.FormattingEnabled = true;
+            queueListBox.ItemHeight = 25;
+            queueListBox.Location = new Point(0, 33);
+            queueListBox.Name = "queueListBox";
+            queueListBox.Size = new Size(800, 385);
+            queueListBox.TabIndex = 2;
+            // 
+            // MainForm
+            // 
+            Controls.Add(queueListBox);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -93,5 +109,6 @@
         private ToolStripStatusLabel toolStripStatusLabel1;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem toggleListenerMenuItem;
+        private ListBox queueListBox;
     }
 }

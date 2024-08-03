@@ -83,6 +83,24 @@ public partial class MainForm : Form
     private void UpdateStatusLabel()
     {
         toolStripStatusLabel1.Text = $"Items in queue: {clipboardQueue.Count} | Listener: {(isListening ? "Active" : "Inactive")}";
+        UpdateQueueListBox();
+    }
+
+    private void UpdateQueueListBox()
+    {
+        queueListBox.BeginUpdate();
+        queueListBox.Items.Clear();
+        foreach (var item in clipboardQueue.Reverse())
+        {
+            queueListBox.Items.Add(TruncateString(item, 100));
+        }
+        queueListBox.EndUpdate();
+    }
+
+    private string TruncateString(string str, int maxLength)
+    {
+        if (string.IsNullOrEmpty(str)) return str;
+        return str.Length <= maxLength ? str : str.Substring(0, maxLength - 3) + "...";
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
