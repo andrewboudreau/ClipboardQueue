@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            historyStatusLabel = new ToolStripStatusLabel();
             menuStrip1 = new MenuStrip();
             toggleListenerMenuItem = new ToolStripMenuItem();
             queueListBox = new ListBox();

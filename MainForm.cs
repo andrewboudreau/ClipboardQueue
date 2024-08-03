@@ -74,7 +74,7 @@ public partial class MainForm : Form
 
         // Hide the form on startup
         this.WindowState = FormWindowState.Minimized;
-        this.ShowInTaskbar = false;
+        this.ShowInTaskbar = true;
 
         // Attach listeners
         ToggleListeners(true);
@@ -115,11 +115,11 @@ public partial class MainForm : Form
         {
             case WM_CLIPBOARDUPDATE:
                 OnClipboardChanged();
+                AddToHistory('L');
                 break;
         }
         base.WndProc(ref m);
     }
-
 
     private void ToggleListeners(bool attach)
     {
@@ -200,6 +200,7 @@ public partial class MainForm : Form
         return result.Length <= maxLength ? result : string.Concat(result.AsSpan(0, maxLength - 3), "...");
     }
 
+    private static readonly object syncRoot = new();
 
     private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
@@ -208,20 +209,23 @@ public partial class MainForm : Form
             int vkCode = Marshal.ReadInt32(lParam);
             if (IsKeyPressed(VK_CONTROL))
             {
-                switch (vkCode)
+                lock (syncRoot)
                 {
-                    case VK_C:
-                        OnCopyDetected();
-                        break;
-                    case VK_V:
-                        OnPasteDetected();
-                        break;
-                    case VK_X:
-                        OnCutDetected();
-                        break;
-                    case VK_P:
-                        PrintQueue();
-                        break;
+                    switch (vkCode)
+                    {
+                        case VK_C:
+                            OnCopyDetected();
+                            break;
+                        case VK_V:
+                            OnPasteDetected();
+                            break;
+                        case VK_X:
+                            OnCutDetected();
+                            break;
+                        case VK_P:
+                            PrintQueue();
+                            break;
+                    }
                 }
             }
         }
@@ -238,8 +242,6 @@ public partial class MainForm : Form
 
     private void OnCopyDetected()
     {
-        // The actual copying is handled by OnClipboardChanged
-        // This method can be used for additional actions if needed
         AddToHistory(COPY_ICON);
     }
 
@@ -248,6 +250,11 @@ public partial class MainForm : Form
         if (clipboardQueue.Count > 0)
         {
             string text = clipboardQueue.Dequeue();
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
             Clipboard.SetText(text);
             UpdateStatusLabel();
             AddToHistory(PASTE_ICON);
