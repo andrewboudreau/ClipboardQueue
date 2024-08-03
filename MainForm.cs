@@ -3,6 +3,13 @@ using System.Diagnostics;
 
 namespace ClipboardQueue;
 
+public enum WindowState
+{
+    Normal,
+    Minimized,
+    Maximized
+}
+
 public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
 public partial class MainForm : Form
@@ -48,6 +55,45 @@ public partial class MainForm : Form
         UpdateStatusLabel();
         _proc = HookCallback;
         _hookID = SetHook(_proc);
+
+        // Set up the notify icon context menu
+        ContextMenuStrip contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add("Show", null, ShowForm);
+        contextMenu.Items.Add("Exit", null, ExitApplication);
+        notifyIcon1.ContextMenuStrip = contextMenu;
+
+        // Hide the form on startup
+        this.WindowState = FormWindowState.Minimized;
+        this.ShowInTaskbar = false;
+    }
+
+    private void ShowForm(object sender, EventArgs e)
+    {
+        Show();
+        this.WindowState = FormWindowState.Normal;
+    }
+
+    private void ExitApplication(object sender, EventArgs e)
+    {
+        Application.Exit();
+    }
+
+    private void NotifyIcon1_MouseClick(object sender, MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Left)
+        {
+            ShowForm(sender, e);
+        }
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            Hide();
+        }
+
+        base.OnResize(e);
     }
 
     protected override void WndProc(ref Message m)

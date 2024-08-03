@@ -28,11 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             menuStrip1 = new MenuStrip();
             toggleListenerMenuItem = new ToolStripMenuItem();
             queueListBox = new ListBox();
+            notifyIcon1 = new NotifyIcon(components);
             statusStrip1.SuspendLayout();
             menuStrip1.SuspendLayout();
             SuspendLayout();
@@ -98,6 +100,13 @@
             menuStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
+
+            // 
+            // notifyIcon1
+            // 
+            notifyIcon1.Text = "Clipboard Queue";
+            notifyIcon1.Visible = true;
+            notifyIcon1.MouseClick += NotifyIcon1_MouseClick;
         }
 
         #endregion
@@ -107,5 +116,6 @@
         private MenuStrip menuStrip1;
         private ToolStripMenuItem toggleListenerMenuItem;
         private ListBox queueListBox;
+        private NotifyIcon notifyIcon1;
     }
 }
