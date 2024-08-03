@@ -15,10 +15,11 @@ public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lPa
 public partial class MainForm : Form
 {
     private readonly Queue<string> clipboardQueue = new();
+    private readonly LowLevelKeyboardProc _proc;
+
     private const int WM_CLIPBOARDUPDATE = 0x031D;
     private bool isListening = false;
-    private readonly LowLevelKeyboardProc _proc;
-    private readonly IntPtr _hookId = IntPtr.Zero;
+    private IntPtr _hookId = IntPtr.Zero;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
