@@ -1,11 +1,10 @@
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace ClipboardQueue;
 
 public partial class MainForm : Form
 {
-    private Queue<string> clipboardQueue = new Queue<string>();
+    private readonly Queue<string> clipboardQueue = new();
     private const int WM_CLIPBOARDUPDATE = 0x031D;
     private bool isListening = false;
 
@@ -22,6 +21,7 @@ public partial class MainForm : Form
         InitializeComponent();
         this.KeyPreview = true;
         this.KeyDown += MainForm_KeyDown;
+        AttachClipboardListener();
         UpdateStatusLabel();
     }
 
@@ -42,7 +42,7 @@ public partial class MainForm : Form
         {
             AddClipboardFormatListener(this.Handle);
             isListening = true;
-            toggleListenerMenuItem.Text = "Detach Clipboard Queue Listener";
+            toggleListenerMenuItem.Text = "Detach Listener";
             UpdateStatusLabel();
         }
     }
@@ -53,7 +53,7 @@ public partial class MainForm : Form
         {
             RemoveClipboardFormatListener(this.Handle);
             isListening = false;
-            toggleListenerMenuItem.Text = "Attach Clipboard Queue Listener";
+            toggleListenerMenuItem.Text = "Attach Listener";
             UpdateStatusLabel();
         }
     }
@@ -97,10 +97,11 @@ public partial class MainForm : Form
         queueListBox.EndUpdate();
     }
 
-    private string TruncateString(string str, int maxLength)
+    private static string TruncateString(string str, int maxLength)
     {
-        if (string.IsNullOrEmpty(str)) return str;
-        return str.Length <= maxLength ? str : str.Substring(0, maxLength - 3) + "...";
+        string result = str.Replace("\r\n", "");
+        if (string.IsNullOrEmpty(result)) return result;
+        return result.Length <= maxLength ? result : string.Concat(result.AsSpan(0, maxLength - 3), "...");
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -109,7 +110,7 @@ public partial class MainForm : Form
         base.OnFormClosing(e);
     }
 
-    private void MainForm_KeyDown(object sender, KeyEventArgs e)
+    private void MainForm_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Control)
         {
