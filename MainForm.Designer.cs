@@ -30,7 +30,10 @@
         {
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            menuStrip1 = new MenuStrip();
+            toggleListenerMenuItem = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
+            menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
@@ -49,16 +52,37 @@
             toolStripStatusLabel1.Size = new Size(179, 25);
             toolStripStatusLabel1.Text = "No Items";
             // 
+            // menuStrip1
+            // 
+            menuStrip1.ImageScalingSize = new Size(24, 24);
+            menuStrip1.Items.AddRange(new ToolStripItem[] { toggleListenerMenuItem });
+            menuStrip1.Location = new Point(0, 0);
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Size = new Size(800, 33);
+            menuStrip1.TabIndex = 1;
+            menuStrip1.Text = "menuStrip1";
+            // 
+            // toggleListenerMenuItem
+            // 
+            toggleListenerMenuItem.Name = "toggleListenerMenuItem";
+            toggleListenerMenuItem.Size = new Size(270, 29);
+            toggleListenerMenuItem.Text = "Attach Clipboard Queue Listener";
+            toggleListenerMenuItem.Click += ToggleClipboardListener;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Controls.Add(statusStrip1);
+            Controls.Add(menuStrip1);
+            MainMenuStrip = menuStrip1;
             Name = "MainForm";
             Text = "ClipboardQueue";
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -67,5 +91,7 @@
 
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private MenuStrip menuStrip1;
+        private ToolStripMenuItem toggleListenerMenuItem;
     }
 }

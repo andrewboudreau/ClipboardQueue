@@ -7,7 +7,7 @@ public partial class MainForm : Form
 {
     private Queue<string> clipboardQueue = new Queue<string>();
     private const int WM_CLIPBOARDUPDATE = 0x031D;
-    private IntPtr nextClipboardViewer;
+    private bool isListening = false;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -20,9 +20,9 @@ public partial class MainForm : Form
     public MainForm()
     {
         InitializeComponent();
-        AddClipboardFormatListener(this.Handle);
         this.KeyPreview = true;
         this.KeyDown += MainForm_KeyDown;
+        UpdateStatusLabel();
     }
 
     protected override void WndProc(ref Message m)
@@ -34,6 +34,40 @@ public partial class MainForm : Form
                 break;
         }
         base.WndProc(ref m);
+    }
+
+    private void AttachClipboardListener()
+    {
+        if (!isListening)
+        {
+            AddClipboardFormatListener(this.Handle);
+            isListening = true;
+            toggleListenerMenuItem.Text = "Detach Clipboard Queue Listener";
+            UpdateStatusLabel();
+        }
+    }
+
+    private void DetachClipboardListener()
+    {
+        if (isListening)
+        {
+            RemoveClipboardFormatListener(this.Handle);
+            isListening = false;
+            toggleListenerMenuItem.Text = "Attach Clipboard Queue Listener";
+            UpdateStatusLabel();
+        }
+    }
+
+    private void ToggleClipboardListener(object sender, EventArgs e)
+    {
+        if (isListening)
+        {
+            DetachClipboardListener();
+        }
+        else
+        {
+            AttachClipboardListener();
+        }
     }
 
     private void OnClipboardChanged()
@@ -48,12 +82,12 @@ public partial class MainForm : Form
 
     private void UpdateStatusLabel()
     {
-        toolStripStatusLabel1.Text = $"Items in queue: {clipboardQueue.Count}";
+        toolStripStatusLabel1.Text = $"Items in queue: {clipboardQueue.Count} | Listener: {(isListening ? "Active" : "Inactive")}";
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        RemoveClipboardFormatListener(this.Handle);
+        DetachClipboardListener();
         base.OnFormClosing(e);
     }
 
